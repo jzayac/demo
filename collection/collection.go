@@ -80,6 +80,13 @@ func newInstance() *collection {
 
 	go periodicallyUpdateCache(city)
 
+	// TODO: exmaple for new cache but with same airline source
+	// sm := model.NewAirline()
+	// some, _ := cc.NewCache("some", 2, sm)
+	// (*ins)[some.GetName()] = some
+
+	// go periodicallyUpdateCache(some)
+
 	logger.Log("msg", "collection initialized")
 	return ins
 }
