@@ -1,4 +1,4 @@
-package city
+package cache
 
 import (
 	"errors"
@@ -15,8 +15,8 @@ func (m modelInterfaceTest) GetList() (map[string]string, error) {
 	return m.data, m.err
 }
 
-func TestCityLen(t *testing.T) {
-	c := city{}
+func TestCacheLen(t *testing.T) {
+	c := cache{}
 
 	size := c.Len()
 	expect := 0
@@ -26,14 +26,14 @@ func TestCityLen(t *testing.T) {
 	}
 }
 
-func TestCityGetList(t *testing.T) {
+func TestCacheGetList(t *testing.T) {
 	cases := []struct {
-		inst      *city
+		inst      *cache
 		expectLen int
 	}{
 		{
-			inst: &city{
-				data: cityIata{
+			inst: &cache{
+				data: cacheIata{
 					"1": "1",
 				},
 				mi: nil,
@@ -41,8 +41,8 @@ func TestCityGetList(t *testing.T) {
 			expectLen: 1,
 		},
 		{
-			inst: &city{
-				data: cityIata{
+			inst: &cache{
+				data: cacheIata{
 					"1": "1",
 					"2": "2",
 				},
@@ -63,12 +63,12 @@ func TestCityGetList(t *testing.T) {
 
 func TestGetListEqual(t *testing.T) {
 	cases := []struct {
-		inst      *city
+		inst      *cache
 		expectLen int
 	}{
 		{
-			inst: &city{
-				data: cityIata{
+			inst: &cache{
+				data: cacheIata{
 					"1": "1",
 				},
 				mi: nil,
@@ -76,8 +76,8 @@ func TestGetListEqual(t *testing.T) {
 			expectLen: 1,
 		},
 		{
-			inst: &city{
-				data: cityIata{
+			inst: &cache{
+				data: cacheIata{
 					"1": "1",
 					"2": "2",
 				},
@@ -90,23 +90,30 @@ func TestGetListEqual(t *testing.T) {
 	for _, c := range cases {
 		list := c.inst.GetList()
 
-		if !reflect.DeepEqual(cityIata(list), c.inst.data) {
+		if !reflect.DeepEqual(cacheIata(list), c.inst.data) {
 			t.Errorf("Expected to be equal %+v :: %+v", list, c.inst.data)
 		}
 	}
 }
 
 func TestGetName(t *testing.T) {
-	c := &city{}
+	cases := []string{
+		"test", "city", "1234",
+	}
 
-	name := c.GetName()
+	for _, value := range cases {
+		c := &cache{
+			name: value,
+		}
 
-	if name != "city" {
-		t.Error("Expected name to be city")
+		name := c.GetName()
+		if name != value {
+			t.Error("Expected name to be ", value)
+		}
 	}
 }
 
-func TestnewCity(t *testing.T) {
+func TestnewCache(t *testing.T) {
 	cases := []modelInterfaceTest{
 		modelInterfaceTest{
 			data: map[string]string{
@@ -122,9 +129,9 @@ func TestnewCity(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		city, err := newCity(c)
-		if !reflect.DeepEqual(city.data, cityIata(c.data)) {
-			t.Errorf("Expected data to be equal %+v :: %+v", city.data, c.data)
+		cache, err := NewCache("test", 3, c)
+		if !reflect.DeepEqual(cache.data, cacheIata(c.data)) {
+			t.Errorf("Expected data to be equal %+v :: %+v", cache.data, c.data)
 		}
 
 		if !reflect.DeepEqual(err, c.err) {

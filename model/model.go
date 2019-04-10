@@ -31,15 +31,15 @@ func InitDatabaseModel() error {
 	// Automatically migrate your schema, to keep your schema update to date.
 	db.AutoMigrate(Iata{})
 
-	// db.Create(&Iata{
-	// 	Index: "1234",
-	// 	Value: "test airlines",
-	// })
+	db.Create(&Iata{
+		Index: "1234",
+		Value: "test airlines",
+	})
 
-	// db.Create(&Iata{
-	// 	Index: "1235",
-	// 	Value: "slovak airlines",
-	// })
+	db.Create(&Iata{
+		Index: "1235",
+		Value: "slovak airlines",
+	})
 
 	return nil
 }

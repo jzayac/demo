@@ -24,7 +24,7 @@ func main() {
 	logger := log.NewLogfmtLogger(os.Stderr)
 
 	if err := model.InitDatabaseModel(); err != nil {
-		logger.Log("fatal connection to db: ", err)
+		logger.Log("error", err)
 		os.Exit(1)
 	}
 

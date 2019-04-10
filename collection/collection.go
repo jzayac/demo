@@ -2,19 +2,25 @@ package collection
 
 import (
 	"errors"
-	"fmt"
+	"os"
 	"sync"
 	"time"
 
+	"github.com/go-kit/kit/log"
+
 	"demo/cache"
-	"demo/collection/airline"
-	"demo/collection/city"
+	cc "demo/collection/cache"
+	"demo/model"
 )
 
 type collection map[string]cache.Interface
 
+var logger log.Logger
+
 var instance *collection
 var once sync.Once
+
+var mu sync.Mutex
 
 func (c collection) GetKeys() []string {
 	keys := make([]string, 0, len(c))
@@ -25,6 +31,8 @@ func (c collection) GetKeys() []string {
 }
 
 func (c collection) GetInstanceByKey(key string) (cache.Interface, error) {
+	mu.Lock()
+	defer mu.Unlock()
 	i, ok := c[key]
 	if !ok {
 		return nil, errors.New("key not fond")
@@ -34,6 +42,7 @@ func (c collection) GetInstanceByKey(key string) (cache.Interface, error) {
 
 func GetInstance() *collection {
 	once.Do(func() {
+		logger = log.NewLogfmtLogger(os.Stderr)
 		instance = newInstance()
 	})
 
@@ -41,30 +50,36 @@ func GetInstance() *collection {
 }
 
 func periodicallyUpdateCache(c cache.Interface) {
-
 	sec := c.GetUpdateIterationInSeconds()
-	fmt.Println(sec)
 
 	for t := range time.NewTicker(sec * time.Second).C {
-
-		fmt.Println("time tick ", t, c.GetName())
+		mu.Lock()
+		logger.Log("time_tick", t, "cache_name", c.GetName())
 
 		err := c.UpdateCacheDataFromDb()
-		fmt.Println(err)
 
+		if err != nil {
+			logger.Log("message", "cache update fail: ", "err", err, "cache_name", c.GetName())
+		}
+		mu.Unlock()
 	}
 }
 
 func newInstance() *collection {
 	ins := &collection{}
 
-	airlineInstance := airline.GetInstance()
-	(*ins)[airlineInstance.GetName()] = airlineInstance
+	am := model.NewAirline()
+	airline, _ := cc.NewCache("airline", 2, am)
+	(*ins)[airline.GetName()] = airline
 
-	cityInstance := city.GetInstance()
-	(*ins)[cityInstance.GetName()] = cityInstance
+	go periodicallyUpdateCache(airline)
 
-	go periodicallyUpdateCache(cityInstance)
+	cm := model.NewCity()
+	city, _ := cc.NewCache("city", 2, cm)
+	(*ins)[city.GetName()] = city
 
+	go periodicallyUpdateCache(city)
+
+	logger.Log("msg", "collection initialized")
 	return ins
 }
