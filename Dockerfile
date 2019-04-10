@@ -1,7 +1,10 @@
 FROM golang:alpine as builder
 COPY ./ /go/src/demo
 WORKDIR /go/src/demo
-RUN CGO_ENABLED=0 go build main.go
+RUN apk add curl && \
+    curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh && \
+    dep ensure && \
+    CGO_ENABLED=0 go build main.go
 
 FROM scratch
 COPY --from=builder /go/src/demo/main .
