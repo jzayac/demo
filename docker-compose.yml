@@ -1,0 +1,32 @@
+version: '3'
+services:
+  demo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kiwi/demo:0.1
+    environment:
+      - GO_ENV=PROD
+    depends_on:
+      - pg
+      - redis
+    ports:
+      - "7000:7000"
+    container_name: kiwi_demo
+  pg:
+    image: postgres:11.2
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=cache
+    # ports:
+    #   - "5432:5432"
+  redis:
+    image: redis:5.0.4-alpine
+  # redis:
+  #   image: rediscommander/redis-commander
+  #   environment:
+  #     -  REDIS_HOSTS=local:redis:6379
+  #   ports:
+  #     - "8081:8081"
+
